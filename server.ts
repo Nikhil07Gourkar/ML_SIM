@@ -118,13 +118,15 @@ Try stepping through the simulation in the **Algorithm Simulator** to see how we
   return res.json({ reply: fallbackReply, source: 'educational-knowledge-base' });
 });
 
-// 2. Python Backend Health Check Proxy
+// 2. Python Backend Health Check Proxy (uses BACKEND_URL binding on Vercel)
 app.get('/api/python-status', async (_req: Request, res: Response) => {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1200);
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
 
-    const response = await fetch('http://localhost:8000/api/health', {
+    const backendBase = process.env.BACKEND_URL || 'http://localhost:8000';
+    const targetUrl = new URL('/api/health', backendBase);
+    const response = await fetch(targetUrl, {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -141,6 +143,23 @@ app.get('/api/python-status', async (_req: Request, res: Response) => {
     online: false,
     message: 'External Python FastAPI service is offline. Using built-in high-performance TypeScript ML engine.',
   });
+});
+
+// 3. Python Backend Train Proxy (uses BACKEND_URL binding on Vercel)
+app.post('/api/python-train', async (req: Request, res: Response) => {
+  try {
+    const backendBase = process.env.BACKEND_URL || 'http://localhost:8000';
+    const targetUrl = new URL('/api/train', backendBase);
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+    });
+    const data = await response.json();
+    return res.status(response.status).json(data);
+  } catch (err: any) {
+    return res.status(502).json({ error: 'Failed to contact Python backend', details: err?.message });
+  }
 });
 
 // Vite Middleware for Dev or Static Serving for Prod
