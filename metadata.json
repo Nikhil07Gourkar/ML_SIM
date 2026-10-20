@@ -1,0 +1,6 @@
+{
+  "name": "ML Algorithm Simulator - Interactive Machine Learning Lab",
+  "description": "Interactive machine learning laboratory with step-by-step educational algorithm simulations, real numerical training, dataset exploration, curriculum lessons, and an AI tutor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
